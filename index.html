@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BUBBLE SURGE - Made By Ayan Ur Rehman</title>
+    <link rel="icon" type="image/jpeg" href="./icon.jpeg">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#020617">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bubble Surge">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* */
+        #app-window {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 480px;
+            max-height: 880px;
+            background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0px;
+        }
+
+        @media (min-height: 700px) and (min-width: 500px) {
+            #app-window {
+                border-radius: 28px;
+                height: 94vh;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+            }
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+
+        /* */
+        .screen {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            padding: 24px 20px;
+            background: rgba(2, 6, 23, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Glowing Creator Badge */
+        .brand-badge {
+            align-self: center;
+            padding: 6px 18px;
+            background: linear-gradient(90deg, rgba(234, 179, 8, 0.15), rgba(244, 63, 94, 0.2), rgba(168, 85, 247, 0.15));
+            border: 1px solid rgba(234, 179, 8, 0.6);
+            border-radius: 9999px;
+            color: #fef08a;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), inset 0 0 10px rgba(234, 179, 8, 0.2);
+            animation: pulse-glow 3s infinite alternate;
+            margin-bottom: 12px;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); border-color: rgba(234, 179, 8, 0.4); }
+            100% { box-shadow: 0 0 24px rgba(234, 179, 8, 0.5); border-color: rgba(234, 179, 8, 0.9); }
+        }
+
+        .logo-title {
+            font-size: 42px;
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.05;
+            background: linear-gradient(135deg, #38bdf8 0%, #c084fc 50%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 6px 18px rgba(168, 85, 247, 0.35));
+            letter-spacing: -0.5px;
+            margin-bottom: 28px;
+        }
+
+        /* Modern Tactile Buttons */
+        .btn-action {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px -6px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-arcade {
+            background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-emerald {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+        }
+
+        /* 50 Level Map Grid */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .level-node {
+            aspect-ratio: 1;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 15px;
+            color: #475569;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .level-node.unlocked {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%);
+            border-color: #818cf8;
+            color: #f8fafc;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .level-node.unlocked:active {
+            transform: scale(0.92);
+        }
+
+        .level-node.completed {
+            border-color: #34d399;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
+        }
+
+        .star-row {
+            font-size: 8px;
+            margin-top: 2px;
+            color: #fde047;
+            letter-spacing: -1px;
+        }
+
+        /* HUD Layer & Cards */
+        #hud-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 16px 20px;
+            z-index: 15;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .hud-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 8px 16px;
+            backdrop-filter: blur(12px);
+            pointer-events: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .hud-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hud-value {
+            font-size: 18px;
+            font-weight: 900;
+            color: #38bdf8;
+            line-height: 1.1;
+        }
+
+        /* Booster Dock */
+        #booster-dock {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            display: flex;
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 10px 18px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .booster-btn {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .booster-btn:active {
+            transform: scale(0.88);
+        }
+
+        .booster-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0f172a;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div id="app-window">
+    <!-- -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- IN-GAME HUD -->
+    <div id="hud-layer" style="display: none;">
+        <div class="hud-card">
+            <div class="hud-title">Level <span id="hud-level-num">1</span></div>
+            <div id="hud-score" class="hud-value">0</div>
+        </div>
+        <div class="hud-card" style="text-align: center;">
+            <div class="hud-title" id="hud-target-label">Target / Moves</div>
+            <div class="hud-value" style="color: #fef08a;">
+                <span id="hud-score-req">0</span> / <span id="hud-moves">0</span>m
+            </div>
+        </div>
+        <button id="btn-pause" class="hud-card" style="cursor: pointer; padding: 10px 14px;">
+            ⏸️
+        </button>
+    </div>
+
+    <!-- BOOSTER DOCK -->
+    <div id="booster-dock" style="display: none;">
+        <button class="booster-btn" style="border-color: #ef4444;" onclick="useBooster('bomb')">
+            💣 <span id="count-bomb" class="booster-badge">0</span>
+        </button>
+        <button class="booster-btn" style="border-color: #38bdf8;" onclick="useBooster('freeze')">
+            ❄️ <span id="count-freeze" class="booster-badge">0</span>
+        </button>
+        <button class="booster-btn" style="border-color: #eab308;" onclick="useBooster('zap')">
+            ⚡ <span id="count-zap" class="booster-badge">0</span>
+        </button>
+    </div>
+
+    <!-- -->
+    <div id="screen-main" class="screen active">
+        <div style="margin: auto 0; display: flex; flex-direction: column; align-items: center;">
+            <div class="brand-badge">✨ MADE BY AYAN UR REHMAN ✨</div>
+            <h1 class="logo-title">BUBBLE<br>SURGE</h1>
+
+            <div style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
+                <button id="btn-menu-campaign" class="btn-action btn-primary">
+                    <span style="font-size: 20px;">🗺️</span> CAMPAIGN MAP (50)
+                </button>
+                <button id="btn-menu-arcade" class="btn-action btn-arcade">
+                    <span style="font-size: 20px;">♾️</span> ARCADE ENDLESS
+                </button>
+                <button id="btn-menu-shop" class="btn-action btn-emerald">
+                    <span style="font-size: 20px;">🛒</span> SURGE SHOP
+                </button>
+                <button id="btn-menu-daily" class="btn-action btn-secondary">
+                    <span style="font-size: 20px;">🎁</span> DAILY REWARD
+                    <span id="daily-status" style="font-size: 11px; opacity: 0.7; margin-left: auto;"></span>
+                </button>
+            </div>
+        </div>
+
+        <div style="text-align: center; font-size: 14px; font-weight: 700; color: #94a3b8; padding-top: 16px;">
+            COINS: <span id="menu-coin-count" style="color: #fef08a;">0</span> 🪙
+        </div>
+    </div>
+
+    <!-- -->
+    <div id="screen-levels" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button id="btn-back-levels" class="btn-action btn-secondary" style="width: auto; padding: 10px 18px; font-size: 13px;">
+                ⬅ BACK TO MENU
+            </button>
+            <div class="hud-card" style="padding: 6px 14px; display: flex; align-items: center; gap: 6px;">
+                🪙 <span id="levels-coin-count" style="font-weight: 900; color: #fef08a;">0</span>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; font-size: 22px; font-weight: 900; color: #38bdf8; margin-bottom: 16px;">
+            CAMPAIGN MAP
+        </h2>
+
+        <div id="levels-container" class="level-grid"></div>
+    </div>
+
+    <!-- -->
+    <div id="screen-shop" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button id="btn-back-shop" class="btn-action btn-secondary" style="width: auto; padding: 10px 18px; font-size: 13px;">
+                ⬅ BACK TO MENU
+            </button>
+            <div class="hud-card" style="padding: 6px 14px; display: flex; align-items: center; gap: 6px;">
+                🪙 <span id="shop-coin-count" style="font-weight: 900; color: #fef08a;">0</span>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; font-size: 22px; font-weight: 900; color: #10b981; margin-bottom: 20px;">
+            SURGE SHOP
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-weight: 800; font-size: 16px; color: #f8fafc;">💣 Mega Bomb</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Creates massive blast wave</div>
+                </div>
+                <button class="btn-action btn-emerald" style="width: auto; padding: 10px 16px; font-size: 13px;" onclick="buyItem('bomb', 150)">
+                    150 🪙
+                </button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-weight: 800; font-size: 16px; color: #f8fafc;">❄️ Time Freeze</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Freezes bubble movement for 6s</div>
+                </div>
+                <button class="btn-action btn-emerald" style="width: auto; padding: 10px 16px; font-size: 13px;" onclick="buyItem('freeze', 100)">
+                    100 🪙
+                </button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-weight: 800; font-size: 16px; color: #f8fafc;">⚡ Voltage Zap</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Triggers instant shockwave pop</div>
+                </div>
+                <button class="btn-action btn-emerald" style="width: auto; padding: 10px 16px; font-size: 13px;" onclick="buyItem('zap', 120)">
+                    120 🪙
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- -->
+    <div id="screen-dialog" class="screen" style="justify-content: center; align-items: center;">
+        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 340px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+            <div id="dialog-stars" style="font-size: 32px; margin-bottom: 8px;">⭐⭐⭐</div>
+            <h3 id="dialog-title" style="font-size: 24px; font-weight: 900; color: #38bdf8; margin-bottom: 10px;">LEVEL COMPLETED!</h3>
+            <p id="dialog-desc" style="font-size: 14px; color: #94a3b8; margin-bottom: 24px;">Target reached cleanly!</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button id="btn-dialog-next" class="btn-action btn-primary">NEXT LEVEL ➔</button>
+                <button id="btn-dialog-retry" class="btn-action btn-arcade">RETRY LEVEL</button>
+                <button id="btn-dialog-quit" class="btn-action btn-secondary">MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+class SoundController {
+    constructor() { this.ctx = null; }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playPop(pitchModifier = 1) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+
+        const baseFreq = 300 * Math.min(pitchModifier, 2.5);
+        osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 2.2, this.ctx.currentTime + 0.09);
+
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+    }
+
+    playCoin() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+
+        osc.frequency.setValueAtTime(987.77, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.08);
+
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    }
+
+    playFanfare() {
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.09);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.09 + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.09);
+            osc.stop(this.ctx.currentTime + idx * 0.09 + 0.25);
+        });
+    }
+}
+
+const sounds = new SoundController();
+
+let coins = parseInt(localStorage.getItem('bs_coins')) || 250;
+let unlockedLevel = parseInt(localStorage.getItem('bs_unlocked')) || 1;
+let levelStars = JSON.parse(localStorage.getItem('bs_stars')) || {};
+let inventory = JSON.parse(localStorage.getItem('bs_inventory')) || { bomb: 2, freeze: 2, zap: 2 };
+
+let gameMode = 'arcade'; // 'arcade' | 'campaign'
+let currentLevelNum = 1;
+let score = 0;
+let movesLeft = 0;
+let targetScore = 0;
+let freezeTimer = 0;
+let activeHoldBubble = null;
+let levelEndingState = false;
+
+// Generate balanced parameters for all 50 levels
+function getLevelConfig(num) {
+    const target = 300 + (num - 1) * 200; // L1: 300, L2: 500, L3: 700...
+    const moves = Math.max(8, 10 + Math.floor(num / 3)); // L1: 10, L2: 10, etc.
+    const bubbleCount = Math.min(22, 14 + Math.floor(num / 4));
+    return { target, moves, bubbleCount };
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let bubbles = [];
+let particles = [];
+let shockwaves = [];
+
+function resizeCanvas() {
+    const app = document.getElementById('app-window');
+    canvas.width = app.clientWidth;
+    canvas.height = app.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const GEM_TYPES = [
+    { primary: '#f43f5e', secondary: '#9f1239' }, // Ruby
+    { primary: '#38bdf8', secondary: '#0369a1' }, // Sapphire
+    { primary: '#c084fc', secondary: '#6b21a8' }, // Amethyst
+    { primary: '#34d399', secondary: '#065f46' }, // Emerald
+    { primary: '#fbbf24', secondary: '#92400e' }  // Topaz
+];
+
+class Bubble {
+    constructor(x, y, r) {
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+        this.maxRadius = 58;
+        this.isGrowing = false;
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.5 + Math.random() * 0.6;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+
+        this.type = GEM_TYPES[Math.floor(Math.random() * GEM_TYPES.length)];
+    }
+
+    update() {
+        if (this.isGrowing) {
+            if (this.radius < this.maxRadius) {
+                this.radius += 0.9;
+            }
+        } else if (freezeTimer <= 0) {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            const padTop = 75;
+            const padBottom = 95;
+            if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; }
+            if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx *= -1; }
+            if (this.y - this.radius < padTop) { this.y = padTop + this.radius; this.vy *= -1; }
+            if (this.y + this.radius > canvas.height - padBottom) { this.y = canvas.height - padBottom - this.radius; this.vy *= -1; }
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.shadowColor = this.type.primary;
+        ctx.shadowBlur = this.isGrowing ? 18 : 6;
+
+        const grad = ctx.createRadialGradient(
+            this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
+            this.x, this.y, this.radius
+        );
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.3, this.type.primary);
+        grad.addColorStop(0.85, this.type.secondary);
+        grad.addColorStop(1, '#020617');
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Specular highlight
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(this.x - this.radius * 0.35, this.y - this.radius * 0.35, this.radius * 0.22, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.fill();
+
+        if (this.isGrowing) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
+function spawnBoard(count = 14) {
+    bubbles = [];
+    for (let i = 0; i < count; i++) {
+        const r = 18 + Math.random() * 8;
+        const x = r + Math.random() * (canvas.width - r * 2);
+        const y = 85 + Math.random() * (canvas.height - 185);
+        bubbles.push(new Bubble(x, y, r));
+    }
+}
+
+function popBubble(targetBubble, combo = 1) {
+    const index = bubbles.indexOf(targetBubble);
+    if (index === -1) return;
+
+    bubbles.splice(index, 1);
+    sounds.playPop(combo);
+
+    score += 30 * combo;
+    coins += 1;
+    updateUI();
+
+    // Spawn Particles
+    for (let i = 0; i < 10; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 4;
+        particles.push({
+            x: targetBubble.x,
+            y: targetBubble.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 2.5,
+            color: targetBubble.type.primary,
+            alpha: 1
+        });
+    }
+
+    // Expand Shockwave Burst
+    const shockRadius = targetBubble.radius * 1.7;
+    shockwaves.push({
+        x: targetBubble.x,
+        y: targetBubble.y,
+        radius: targetBubble.radius,
+        maxRadius: shockRadius,
+        color: targetBubble.type.primary,
+        alpha: 0.85
+    });
+
+    // Cascading Chain Reaction
+    setTimeout(() => {
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+            const b = bubbles[i];
+            const dist = Math.hypot(targetBubble.x - b.x, targetBubble.y - b.y);
+            if (dist <= shockRadius + b.radius) {
+                popBubble(b, combo + 1);
+            }
+        }
+    }, 65);
+}
+
+function handlePointerDown(e) {
+    if (levelEndingState) return;
+    sounds.init();
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    for (let b of bubbles) {
+        if (Math.hypot(x - b.x, y - b.y) <= b.radius + 12) {
+            activeHoldBubble = b;
+            b.isGrowing = false;
+            break;
+        }
+    }
+}
+
+function handlePointerUp() {
+    if (activeHoldBubble && !levelEndingState) {
+        activeHoldBubble.isGrowing = false;
+        if (gameMode === 'campaign') {
+            movesLeft--;
+            updateUI();
+        }
+        popBubble(activeHoldBubble, 1);
+        activeHoldBubble = null;
+
+        if (gameMode === 'campaign') {
+            setTimeout(checkLevelOutcome, 300);
+        }
+    }
+}
+
+canvas.addEventListener('mousedown', handlePointerDown);
+canvas.addEventListener('mouseup', handlePointerUp);
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); });
+canvas.addEventListener('touchend', (e) => { e.preventDefault(); handlePointerUp(); });
+
+function mainLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (freezeTimer > 0) freezeTimer -= 1/60;
+
+    // Auto-replenish in Arcade mode OR if board clears in Campaign
+    if (bubbles.length === 0) {
+        if (gameMode === 'arcade') {
+            spawnBoard(15);
+        } else if (gameMode === 'campaign' && !levelEndingState) {
+            spawnBoard(getLevelConfig(currentLevelNum).bubbleCount);
+        }
+    }
+
+    bubbles.forEach(b => { b.update(); b.draw(); });
+
+    shockwaves.forEach((sw, idx) => {
+        sw.radius += (sw.maxRadius - sw.radius) * 0.22;
+        sw.alpha -= 0.04;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = Math.max(0, sw.alpha);
+        ctx.stroke();
+        ctx.restore();
+        if (sw.alpha <= 0) shockwaves.splice(idx, 1);
+    });
+
+    particles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.035;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fill();
+        ctx.restore();
+        if (p.alpha <= 0) particles.splice(idx, 1);
+    });
+
+    requestAnimationFrame(mainLoop);
+}
+mainLoop();
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('hud-layer').style.display = 'none';
+    document.getElementById('booster-dock').style.display = 'none';
+
+    if (id) {
+        document.getElementById(id).classList.add('active');
+    }
+}
+
+function updateUI() {
+    document.getElementById('menu-coin-count').innerText = coins;
+    document.getElementById('levels-coin-count').innerText = coins;
+    document.getElementById('shop-coin-count').innerText = coins;
+    document.getElementById('hud-score').innerText = score;
+
+    document.getElementById('count-bomb').innerText = inventory.bomb;
+    document.getElementById('count-freeze').innerText = inventory.freeze;
+    document.getElementById('count-zap').innerText = inventory.zap;
+
+    if (gameMode === 'campaign') {
+        document.getElementById('hud-level-num').innerText = currentLevelNum;
+        document.getElementById('hud-score-req').innerText = `${score}/${targetScore}`;
+        document.getElementById('hud-moves').innerText = movesLeft;
+    } else {
+        document.getElementById('hud-level-num').innerText = '∞';
+        document.getElementById('hud-score-req').innerText = score;
+        document.getElementById('hud-moves').innerText = '∞';
+    }
+
+    localStorage.setItem('bs_coins', coins);
+    localStorage.setItem('bs_inventory', JSON.stringify(inventory));
+}
+
+function startCampaignLevel(levelNum) {
+    gameMode = 'campaign';
+    currentLevelNum = levelNum;
+    levelEndingState = false;
+
+    const config = getLevelConfig(levelNum);
+    score = 0;
+    movesLeft = config.moves;
+    targetScore = config.target;
+
+    showScreen(null);
+    document.getElementById('hud-layer').style.display = 'flex';
+    document.getElementById('booster-dock').style.display = 'flex';
+
+    spawnBoard(config.bubbleCount);
+    updateUI();
+}
+
+function checkLevelOutcome() {
+    if (levelEndingState) return;
+
+    if (score >= targetScore) {
+        levelEndingState = true;
+        sounds.playFanfare();
+
+        const earnedCoins = 50 + currentLevelNum * 10;
+        coins += earnedCoins;
+
+        if (currentLevelNum === unlockedLevel && unlockedLevel < 50) {
+            unlockedLevel++;
+            localStorage.setItem('bs_unlocked', unlockedLevel);
+        }
+
+        const calculatedStars = score >= targetScore * 1.5 ? 3 : (score >= targetScore * 1.2 ? 2 : 1);
+        levelStars[currentLevelNum] = Math.max(levelStars[currentLevelNum] || 0, calculatedStars);
+        localStorage.setItem('bs_stars', JSON.stringify(levelStars));
+
+        document.getElementById('dialog-stars').innerText = '⭐'.repeat(calculatedStars);
+        document.getElementById('dialog-title').innerText = 'LEVEL COMPLETED!';
+        document.getElementById('dialog-title').style.color = '#34d399';
+        document.getElementById('dialog-desc').innerText = `Scored ${score} pts! Earned +${earnedCoins} 🪙`;
+
+        document.getElementById('btn-dialog-next').style.display = currentLevelNum < 50 ? 'block' : 'none';
+        document.getElementById('btn-dialog-retry').style.display = 'none';
+
+        showScreen('screen-dialog');
+    } else if (movesLeft <= 0) {
+        levelEndingState = true;
+        document.getElementById('dialog-stars').innerText = '💔';
+        document.getElementById('dialog-title').innerText = 'OUT OF MOVES!';
+        document.getElementById('dialog-title').style.color = '#f43f5e';
+        document.getElementById('dialog-desc').innerText = `Target: ${targetScore} | Your Score: ${score}`;
+
+        document.getElementById('btn-dialog-next').style.display = 'none';
+        document.getElementById('btn-dialog-retry').style.display = 'block';
+
+        showScreen('screen-dialog');
+    }
+}
+
+// Menu Click Bindings
+document.getElementById('btn-menu-campaign').onclick = () => {
+    renderLevelGrid();
+    showScreen('screen-levels');
+};
+
+document.getElementById('btn-menu-arcade').onclick = () => {
+    gameMode = 'arcade';
+    score = 0;
+    levelEndingState = false;
+    showScreen(null);
+    document.getElementById('hud-layer').style.display = 'flex';
+    document.getElementById('booster-dock').style.display = 'flex';
+    spawnBoard(15);
+    updateUI();
+};
+
+document.getElementById('btn-menu-shop').onclick = () => showScreen('screen-shop');
+document.getElementById('btn-back-levels').onclick = () => showScreen('screen-main');
+document.getElementById('btn-back-shop').onclick = () => showScreen('screen-main');
+
+document.getElementById('btn-pause').onclick = () => {
+    document.getElementById('dialog-stars').innerText = '⏸️';
+    document.getElementById('dialog-title').innerText = 'GAME PAUSED';
+    document.getElementById('dialog-title').style.color = '#38bdf8';
+    document.getElementById('dialog-desc').innerText = 'Take a short break!';
+    document.getElementById('btn-dialog-next').style.display = 'none';
+    document.getElementById('btn-dialog-retry').style.display = 'none';
+    showScreen('screen-dialog');
+};
+
+document.getElementById('btn-dialog-next').onclick = () => {
+    if (currentLevelNum < 50) {
+        startCampaignLevel(currentLevelNum + 1);
+    }
+};
+
+document.getElementById('btn-dialog-retry').onclick = () => {
+    startCampaignLevel(currentLevelNum);
+};
+
+document.getElementById('btn-dialog-quit').onclick = () => {
+    showScreen('screen-main');
+};
+
+// Render 50 Level Grid
+function renderLevelGrid() {
+    const grid = document.getElementById('levels-container');
+    grid.innerHTML = '';
+
+    for (let i = 1; i <= 50; i++) {
+        const node = document.createElement('div');
+        const isUnlocked = i <= unlockedLevel;
+        const stars = levelStars[i] || 0;
+
+        node.className = `level-node ${isUnlocked ? 'unlocked' : 'locked'} ${stars > 0 ? 'completed' : ''}`;
+        node.innerHTML = `
+            <div>${i}</div>
+            ${stars > 0 ? `<div class="star-row">${'★'.repeat(stars)}</div>` : ''}
+        `;
+
+        if (isUnlocked) {
+            node.onclick = () => startCampaignLevel(i);
+        }
+
+        grid.appendChild(node);
+    }
+}
+
+function buyItem(type, price) {
+    sounds.init();
+    if (coins >= price) {
+        coins -= price;
+        inventory[type] = (inventory[type] || 0) + 1;
+        sounds.playCoin();
+        updateUI();
+    } else {
+        alert("Not enough coins!");
+    }
+}
+
+function useBooster(type) {
+    if (inventory[type] > 0) {
+        if (type === 'freeze') {
+            inventory.freeze--;
+            freezeTimer = 6;
+        } else if (type === 'bomb' && bubbles.length > 0) {
+            inventory.bomb--;
+            const centerBubble = bubbles[Math.floor(bubbles.length / 2)];
+            centerBubble.radius = 55;
+            popBubble(centerBubble, 2);
+        } else if (type === 'zap' && bubbles.length > 0) {
+            inventory.zap--;
+            popBubble(bubbles[0], 2);
+        }
+        updateUI();
+        if (gameMode === 'campaign') {
+            setTimeout(checkLevelOutcome, 300);
+        }
+    }
+}
+
+document.getElementById('btn-menu-daily').onclick = () => {
+    sounds.init();
+    const lastClaim = parseInt(localStorage.getItem('bs_last_daily')) || 0;
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000;
+
+    if (now - lastClaim >= cooldown) {
+        coins += 150;
+        localStorage.setItem('bs_last_daily', now);
+        sounds.playCoin();
+        alert("🎉 Daily Reward Claimed: +150 Coins!");
+        updateUI();
+        updateDailyStatus();
+    } else {
+        const remaining = cooldown - (now - lastClaim);
+        const hrs = Math.floor(remaining / (1000 * 60 * 60));
+        const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        alert(`⌛ Cooldown active! Return in ${hrs}h ${mins}m`);
+    }
+};
+
+function updateDailyStatus() {
+    const lastClaim = parseInt(localStorage.getItem('bs_last_daily')) || 0;
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000;
+
+    if (now - lastClaim < cooldown) {
+        const remaining = cooldown - (now - lastClaim);
+        const hrs = Math.floor(remaining / (1000 * 60 * 60));
+        document.getElementById('daily-status').innerText = `(${hrs}h left)`;
+    } else {
+        document.getElementById('daily-status').innerText = `(READY!)`;
+    }
+}
+
+updateUI();
+updateDailyStatus();
+</script>
+</body>
+</html>
